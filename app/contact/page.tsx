@@ -1,26 +1,47 @@
-"use client";
-import React, { useState } from "react";
+'use client'
+import React, { useState } from 'react';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
   });
+  const [status, setStatus] = useState<string | null>(null); // State to hold submission status
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission (e.g., send data to an API)
-    console.log(formData);
-    // Reset form after submission
-    setFormData({ name: "", email: "", message: "" });
+    setStatus(null); // Reset status before submission
+
+    try {
+      const response = await fetch('https://www.greatfrontend.com/api/questions/contact-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log(response)
+
+      if (response.ok) {
+        console.log('Success');
+        setStatus('Message sent successfully!'); // Update status on success
+
+        // Reset form after successful submission
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setStatus('Failed to send message. Please try again.'); // Update status on error
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setStatus('Failed to send message. Please try again.'); // Update status on error
+    }
   };
 
   return (
@@ -28,9 +49,7 @@ const Contact: React.FC = () => {
       <h1 className="text-2xl font-bold mb-4 text-center">Contact Us</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="name" className="block mb-1 font-semibold">
-            Name
-          </label>
+          <label htmlFor="name" className="block mb-1 font-semibold">Name</label>
           <input
             type="text"
             id="name"
@@ -42,9 +61,7 @@ const Contact: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="email" className="block mb-1 font-semibold">
-            Email
-          </label>
+          <label htmlFor="email" className="block mb-1 font-semibold">Email</label>
           <input
             type="email"
             id="email"
@@ -56,9 +73,7 @@ const Contact: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="message" className="block mb-1 font-semibold">
-            Message
-          </label>
+          <label htmlFor="message" className="block mb-1 font-semibold">Message</label>
           <textarea
             id="message"
             name="message"
@@ -76,6 +91,13 @@ const Contact: React.FC = () => {
           Send Message
         </button>
       </form>
+      {status && (
+        <div className="mt-4 text-center">
+          <p className={`text-lg ${status.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
+            {status}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
